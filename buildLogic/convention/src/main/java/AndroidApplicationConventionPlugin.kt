@@ -91,6 +91,17 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         .get()
                         .toString()
                         .toInt()
+                defaultConfig.versionCode =
+                    libs
+                        .findVersion("projectVersionCode")
+                        .get()
+                        .toString()
+                        .toInt()
+                defaultConfig.versionName =
+                    libs
+                        .findVersion("projectVersionName")
+                        .get()
+                        .toString()
                 @Suppress("UnstableApiUsage")
                 testOptions.animationsDisabled = true
             }
