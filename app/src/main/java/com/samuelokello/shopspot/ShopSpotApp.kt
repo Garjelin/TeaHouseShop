@@ -11,9 +11,12 @@ import com.samuelokello.core.presentation.ui.di.uiModule
 import com.samuelokello.data.repository.di.dataModule
 import com.samuelokello.datasource.local.di.localDataSourceModule
 import com.samuelokello.remote.di.remoteDataSourceModule
+import com.samuelokello.datasource.local.util.MockDataInitializer
 import com.samuelokello.shopspot.di.applicationModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -23,10 +26,27 @@ class ShopSpotApp :
     Application(),
     ImageLoaderFactory {
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob())
+    
+    private val mockDataInitializer: MockDataInitializer by inject()
 
     override fun onCreate() {
         super.onCreate()
         configureKoin()
+        initializeMockData()
+    }
+    
+    /**
+     * Инициализирует mock-данные в базе данных при первом запуске
+     */
+    private fun initializeMockData() {
+        applicationScope.launch {
+            try {
+                mockDataInitializer.initializeIfNeeded()
+            } catch (e: Exception) {
+                // Логируем ошибку, но не крашим приложение
+                e.printStackTrace()
+            }
+        }
     }
 
     override fun newImageLoader(): ImageLoader =

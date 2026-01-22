@@ -2,6 +2,7 @@ package com.samuelokello.datasource.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.samuelokello.datasource.local.db.product.ProductDao
 import com.samuelokello.datasource.local.entity.DimensionsEntity
 import com.samuelokello.datasource.local.entity.MetaEntity
 import com.samuelokello.datasource.local.entity.ReviewEntity
@@ -31,4 +32,6 @@ import com.samuelokello.datasource.local.entity.user.UserEntity
     version = 1,
     autoMigrations = [],
 )
-abstract class ShopSpotDB : RoomDatabase()
+abstract class ShopSpotDB : RoomDatabase() {
+    abstract fun productDao(): ProductDao
+}

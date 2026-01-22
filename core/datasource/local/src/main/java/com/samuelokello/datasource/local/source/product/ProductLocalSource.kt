@@ -2,10 +2,18 @@ package com.samuelokello.datasource.local.source.product
 
 import com.samuelokello.core.domain.model.Product
 import com.samuelokello.datasource.local.db.product.ProductDao
+import com.samuelokello.datasource.local.entity.product.ProductEntity
+import com.samuelokello.datasource.local.mapper.toDomain
+import com.samuelokello.datasource.local.mapper.toEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 interface ProductLocalSource {
-    suspend fun getProducts(): Flow<List<Product>>
+    fun getProducts(): Flow<List<Product>>
+
+    suspend fun insertProducts(products: List<Product>)
+    
+    suspend fun insertProduct(product: Product)
 
     fun searchProductsWithFilters(
         query: String,
@@ -16,39 +24,25 @@ interface ProductLocalSource {
         minRating: Double?,
     ): Flow<List<Product>>
 
-    suspend fun getProductById(id: Int): Product
+    suspend fun getProductById(id: Int): Product?
 }
 
 class ProductLocalSourceImpl(
     private val dao: ProductDao,
 ) : ProductLocalSource {
-    override suspend fun getProducts(): Flow<List<Product>> {
-        TODO("Not yet implemented")
-//         dao
-//            .getAllProducts()
-//            .map { entities ->
-//                entities.map { }
-//            }
-//            .onStart {
-//                try {
-//                    when (dao.getAllProducts().firstOrNull()?.isEmpty() == true) {
-//                        true -> {
-//                        }
-//
-//                        false -> TODO()
-//                    }
-//                } catch (e: Exception) {
-//
-//                }
-// //                catch (e:DataError.Local) {
-// //                    when(e) {
-// //                        DataError.Local.DISK_FULL -> TODO()
-// //                        DataError.Local.CACHE_CORRUPTION -> TODO()
-// //                        DataError.Local.INVALID_DATA_FORMAT -> TODO()
-// //                        DataError.Local.PERMISSION_DENIED -> TODO()
-// //                    }
-// //                }
-//            }
+    
+    override fun getProducts(): Flow<List<Product>> {
+        return dao.getAllProducts().map { entities ->
+            entities.toDomain()
+        }
+    }
+
+    override suspend fun insertProducts(products: List<Product>) {
+        dao.insertProducts(products.toEntity())
+    }
+    
+    override suspend fun insertProduct(product: Product) {
+        dao.insertProducts(product.toEntity())
     }
 
     override fun searchProductsWithFilters(
@@ -59,11 +53,11 @@ class ProductLocalSourceImpl(
         minCount: Int?,
         minRating: Double?,
     ): Flow<List<Product>> {
-        TODO("Not yet implemented")
+        // TODO: Реализовать позже с более сложными запросами
+        TODO("Not yet implemented - будет реализовано в спринте 7")
     }
 
-    override suspend fun getProductById(id: Int): Product {
-        TODO("Not yet implemented")
-//        return dao.getProductById(id)
+    override suspend fun getProductById(id: Int): Product? {
+        return dao.getProductById(id)?.toDomain()
     }
 }

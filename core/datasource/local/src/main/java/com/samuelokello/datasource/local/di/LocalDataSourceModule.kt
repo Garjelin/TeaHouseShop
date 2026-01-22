@@ -8,6 +8,9 @@ import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSource
 import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSourceImpl
 import com.samuelokello.datasource.local.source.preference.PreferenceHelper
 import com.samuelokello.datasource.local.source.preference.PreferencesHelperImpl
+import com.samuelokello.datasource.local.source.product.ProductLocalSource
+import com.samuelokello.datasource.local.source.product.ProductLocalSourceImpl
+import com.samuelokello.datasource.local.util.MockDataInitializer
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -39,5 +42,18 @@ val localDataSourceModule =
 
         single<AuthenticationLocalSource> {
             AuthenticationLocalSourceImpl(get(RemoteQualifier))
+        }
+
+        // Product DAO
+        single { get<ShopSpotDB>().productDao() }
+
+        // Product Local Source
+        single<ProductLocalSource> {
+            ProductLocalSourceImpl(get())
+        }
+
+        // Mock Data Initializer
+        single {
+            MockDataInitializer(get())
         }
     }

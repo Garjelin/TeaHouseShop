@@ -16,10 +16,10 @@ interface ProductDao {
     suspend fun insertProducts(products: List<ProductEntity>)
 
     @Query("SELECT * FROM products")
-    suspend fun getAllProducts(): Flow<List<ProductEntity>>
+    fun getAllProducts(): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products WHERE id = :productId")
-    suspend fun getProductById(productId: Int): ProductEntity
+    suspend fun getProductById(productId: Int): ProductEntity?
 
     @Query("SELECT * FROM products WHERE category = :category")
     suspend fun getProductsByCategory(category: String): List<ProductEntity>
