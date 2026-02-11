@@ -58,9 +58,9 @@ class CartViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val cartItems =
-                    cart.products.map { cartProduct ->
+                    cart.products.mapNotNull { cartProduct ->
                         val product = productRepository.getProductById(cartProduct.productId)
-                        CartItem(product, cartProduct.quantity)
+                        product?.let { CartItem(it, cartProduct.quantity) }
                     }
                 _cartItems.value = cartItems
                 calculateTotal()

@@ -40,8 +40,7 @@ class ProductRepositoryImpl(
         )
     }
 
-    override fun getProductById(id: Int): Product {
-        // TODO: Сделать suspend и вернуть Flow в будущем
-        throw NotImplementedError("Будет реализовано в следующем спринте")
+    override suspend fun getProductById(id: Int): Product? {
+        return localSource.getProductById(id)
     }
 }

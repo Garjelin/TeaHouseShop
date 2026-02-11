@@ -15,9 +15,9 @@ class GetProductByIdUseCase(
      * Выполняет получение товара по ID
      * 
      * @param id идентификатор товара
-     * @return товар или выбрасывает исключение если не найден
+     * @return товар или null если не найден
      */
-    operator fun invoke(id: Int): Product {
+    suspend operator fun invoke(id: Int): Product? {
         return repository.getProductById(id)
     }
 }

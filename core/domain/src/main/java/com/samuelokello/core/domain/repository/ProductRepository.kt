@@ -15,5 +15,5 @@ interface ProductRepository {
         minRating: Double?,
     ): Flow<List<Product>>
 
-    fun getProductById(id: Int): Product
+    suspend fun getProductById(id: Int): Product?
 }

@@ -5,15 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samuelokello.core.domain.model.Product
 import com.samuelokello.core.domain.repository.CartRepository
-import com.samuelokello.core.domain.repository.ProductRepository
-import kotlinx.coroutines.Dispatchers
+import com.samuelokello.core.domain.usecase.product.GetProductByIdUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ProductDetailViewModel(
-    private val repository: ProductRepository,
+    private val getProductByIdUseCase: GetProductByIdUseCase,
     private val cartRepository: CartRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow<ProductDetailUiState>(ProductDetailUiState.Loading)
@@ -22,11 +20,14 @@ class ProductDetailViewModel(
     fun getProductById(productId: Int) {
         viewModelScope.launch {
             try {
-                val result =
-                    withContext(Dispatchers.IO) {
-                        repository.getProductById(id = productId)
-                    }
-                _state.value = ProductDetailUiState.Success(product = result)
+                _state.value = ProductDetailUiState.Loading
+                val result = getProductByIdUseCase(productId)
+                
+                if (result != null) {
+                    _state.value = ProductDetailUiState.Success(product = result)
+                } else {
+                    _state.value = ProductDetailUiState.Error(message = "Product not found")
+                }
             } catch (e: Exception) {
                 _state.value = ProductDetailUiState.Error(message = e.message ?: "An error occurred")
             }

@@ -3,7 +3,7 @@ package com.samuelokello.feat.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samuelokello.core.domain.model.Product
-import com.samuelokello.core.domain.repository.ProductRepository
+import com.samuelokello.core.domain.usecase.product.GetProductsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,19 +12,18 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val repository: ProductRepository,
+    private val getProductsUseCase: GetProductsUseCase,
 ) : ViewModel() {
     private val _homeUiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     var homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
 
     fun loadProducts() {
         viewModelScope.launch {
-            repository
-                .getProducts()
+            getProductsUseCase()
                 .onStart {
                     _homeUiState.value = HomeUiState.Loading
                 }.catch {
-                    _homeUiState.value = HomeUiState.Error(message = it.message ?: " ")
+                    _homeUiState.value = HomeUiState.Error(message = it.message ?: "Unknown error")
                 }.collect { products ->
                     _homeUiState.value = HomeUiState.Success(products)
                 }
