@@ -1,6 +1,8 @@
 package com.samuelokello.datasource.local.util
 
+import android.content.Context
 import com.samuelokello.core.domain.model.Product
+import com.samuelokello.core.presentation.designsystem.R
 import com.samuelokello.datasource.local.source.product.ProductLocalSource
 import kotlinx.coroutines.flow.first
 
@@ -8,23 +10,54 @@ import kotlinx.coroutines.flow.first
  * Утилита для инициализации базы данных mock-данными при первом запуске
  */
 class MockDataInitializer(
-    private val productLocalSource: ProductLocalSource
+    private val productLocalSource: ProductLocalSource,
+    private val context: Context
 ) {
+    
+    companion object {
+        private const val PREFS_NAME = "mock_data_prefs"
+        private const val KEY_DATA_VERSION = "data_version"
+        // Увеличивайте эту версию при изменении mock-данных
+        private const val CURRENT_DATA_VERSION = 6
+    }
+    
+    private val prefs by lazy {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+    
+    /**
+     * Создаёт URI для локального drawable ресурса по его ID
+     */
+    private fun getDrawableUri(resourceId: Int): String {
+        return "android.resource://${context.packageName}/$resourceId"
+    }
     
     /**
      * Проверяет наличие данных в БД и инициализирует их при необходимости
+     * Также обновляет данные если версия изменилась
      */
     suspend fun initializeIfNeeded() {
         val existingProducts = productLocalSource.getProducts().first()
+        val savedVersion = prefs.getInt(KEY_DATA_VERSION, 0)
         
-        if (existingProducts.isEmpty()) {
-            // Инициализируем mock-данные
+        if (existingProducts.isEmpty() || savedVersion < CURRENT_DATA_VERSION) {
+            // Инициализируем или обновляем mock-данные
             productLocalSource.insertProducts(getMockProducts())
+            prefs.edit().putInt(KEY_DATA_VERSION, CURRENT_DATA_VERSION).apply()
         }
     }
     
     /**
+     * Принудительно обновляет все товары
+     */
+    suspend fun forceUpdate() {
+        productLocalSource.insertProducts(getMockProducts())
+        prefs.edit().putInt(KEY_DATA_VERSION, CURRENT_DATA_VERSION).apply()
+    }
+    
+    /**
      * Возвращает список mock-данных для чайного магазина
+     * Используем локальные drawable ресурсы - работают офлайн!
      */
     private fun getMockProducts(): List<Product> {
         return listOf(
@@ -36,7 +69,7 @@ class MockDataInitializer(
                         "Обладает нежным ореховым ароматом и свежим вкусом. " +
                         "Идеален для утреннего чаепития.",
                 category = "Зелёный чай",
-                image = "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400",
+                image = getDrawableUri(R.drawable.tea_green),
                 rating = 4.8,
                 count = 120,
                 isFavourite = false
@@ -48,7 +81,7 @@ class MockDataInitializer(
                 description = "Выдержанный тёмный пуэр с мягким землистым вкусом. " +
                         "Производство 2015 года. Помогает пищеварению и бодрит.",
                 category = "Пуэр",
-                image = "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400",
+                image = getDrawableUri(R.drawable.tea_puer),
                 rating = 4.9,
                 count = 45,
                 isFavourite = false
@@ -60,7 +93,7 @@ class MockDataInitializer(
                 description = "Классический китайский улун с цветочным ароматом. " +
                         "Полуферментированный чай с богатым вкусом и долгим послевкусием.",
                 category = "Улун",
-                image = "https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?w=400",
+                image = getDrawableUri(R.drawable.tea_oolong),
                 rating = 4.7,
                 count = 78,
                 isFavourite = false
@@ -72,7 +105,7 @@ class MockDataInitializer(
                 description = "Нежный белый чай с лёгким сладковатым вкусом. " +
                         "Минимальная обработка сохраняет все полезные свойства.",
                 category = "Белый чай",
-                image = "https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?w=400",
+                image = getDrawableUri(R.drawable.tea_white),
                 rating = 4.6,
                 count = 32,
                 isFavourite = false
@@ -85,7 +118,7 @@ class MockDataInitializer(
                         "Один из самых известных и дорогих китайских чаёв. " +
                         "Глубокий вкус с нотками карамели и орехов.",
                 category = "Улун",
-                image = "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400",
+                image = getDrawableUri(R.drawable.tea_oolong),
                 rating = 5.0,
                 count = 15,
                 isFavourite = false
@@ -97,7 +130,7 @@ class MockDataInitializer(
                 description = "Японский зелёный чай повседневного употребления. " +
                         "Свежий травянистый вкус, богат антиоксидантами.",
                 category = "Зелёный чай",
-                image = "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400",
+                image = getDrawableUri(R.drawable.tea_green),
                 rating = 4.5,
                 count = 95,
                 isFavourite = false
@@ -109,7 +142,7 @@ class MockDataInitializer(
                 description = "Высший сорт порошкового зелёного чая для чайной церемонии. " +
                         "Насыщенный вкус и яркий зелёный цвет.",
                 category = "Зелёный чай",
-                image = "https://images.unsplash.com/photo-1515823808808-c2c93a656e2b?w=400",
+                image = getDrawableUri(R.drawable.tea_green),
                 rating = 4.9,
                 count = 28,
                 isFavourite = false
@@ -121,7 +154,7 @@ class MockDataInitializer(
                 description = "Зелёный чай с натуральными цветами жасмина. " +
                         "Изысканный цветочный аромат и мягкий вкус.",
                 category = "Зелёный чай",
-                image = "https://images.unsplash.com/photo-1563822249548-9a72b6b2f0ec?w=400",
+                image = getDrawableUri(R.drawable.tea_green),
                 rating = 4.7,
                 count = 67,
                 isFavourite = false
@@ -133,7 +166,7 @@ class MockDataInitializer(
                 description = "Копчёный чёрный чай с насыщенным дымным ароматом. " +
                         "Необычный вкус для любителей экспериментов.",
                 category = "Чёрный чай",
-                image = "https://images.unsplash.com/photo-1576092768626-5b04f341b52c?w=400",
+                image = getDrawableUri(R.drawable.tea_black),
                 rating = 4.3,
                 count = 42,
                 isFavourite = false
@@ -145,7 +178,7 @@ class MockDataInitializer(
                 description = "Классический индийский чёрный чай. " +
                         "Крепкий, солодовый вкус. Отлично подходит для завтрака.",
                 category = "Чёрный чай",
-                image = "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400",
+                image = getDrawableUri(R.drawable.tea_black),
                 rating = 4.6,
                 count = 110,
                 isFavourite = false
@@ -157,7 +190,7 @@ class MockDataInitializer(
                 description = "Элитный белый чай из провинции Фуцзянь. " +
                         "Собирается только из почек. Деликатный и утончённый.",
                 category = "Белый чай",
-                image = "https://images.unsplash.com/photo-1558642084-fd07fae5282e?w=400",
+                image = getDrawableUri(R.drawable.tea_white),
                 rating = 5.0,
                 count = 8,
                 isFavourite = false
@@ -169,7 +202,7 @@ class MockDataInitializer(
                 description = "Улун с естественным молочно-сливочным ароматом. " +
                         "Мягкий и нежный вкус, любимец многих.",
                 category = "Улун",
-                image = "https://images.unsplash.com/photo-1587080266227-677cc2a4e76e?w=400",
+                image = getDrawableUri(R.drawable.tea_oolong),
                 rating = 4.8,
                 count = 56,
                 isFavourite = false

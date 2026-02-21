@@ -54,6 +54,6 @@ val localDataSourceModule =
 
         // Mock Data Initializer
         single {
-            MockDataInitializer(get())
+            MockDataInitializer(get(), androidContext())
         }
     }

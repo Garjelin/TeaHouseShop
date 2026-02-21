@@ -4,18 +4,24 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samuelokello.core.domain.model.Product
-import com.samuelokello.core.domain.repository.CartRepository
 import com.samuelokello.core.domain.usecase.product.GetProductByIdUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ProductDetailViewModel(
     private val getProductByIdUseCase: GetProductByIdUseCase,
-    private val cartRepository: CartRepository,
+    // TODO: Добавить CartRepository в Спринте 5
+    // private val cartRepository: CartRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow<ProductDetailUiState>(ProductDetailUiState.Loading)
     val state = _state.asStateFlow()
+    
+    // События для UI (например, показать Snackbar)
+    private val _events = MutableSharedFlow<ProductDetailEvent>()
+    val events = _events.asSharedFlow()
 
     fun getProductById(productId: Int) {
         viewModelScope.launch {
@@ -26,43 +32,19 @@ class ProductDetailViewModel(
                 if (result != null) {
                     _state.value = ProductDetailUiState.Success(product = result)
                 } else {
-                    _state.value = ProductDetailUiState.Error(message = "Product not found")
+                    _state.value = ProductDetailUiState.Error(message = "Товар не найден")
                 }
             } catch (e: Exception) {
-                _state.value = ProductDetailUiState.Error(message = e.message ?: "An error occurred")
+                _state.value = ProductDetailUiState.Error(message = e.message ?: "Произошла ошибка")
             }
         }
     }
 
     fun addToCart(product: Product) {
         viewModelScope.launch {
-            try {
-                cartRepository
-                    .addItemToCart(
-                        userId = 1,
-                        productId = product.id,
-                        quantity = 1,
-                    ).collect { result ->
-                        result.fold(
-                            onSuccess = { cart ->
-                                // Handle successful cart addition
-                                // You might want to show a success message or update UI
-                                Log.e("ProductViewmode", "item aded succesfully")
-                            },
-                            onFailure = { exception ->
-                                _state.value =
-                                    ProductDetailUiState.Error(
-                                        message = exception.message ?: "Failed to add item to cart",
-                                    )
-                            },
-                        )
-                    }
-            } catch (e: Exception) {
-                _state.value =
-                    ProductDetailUiState.Error(
-                        message = e.message ?: "An error occurred",
-                    )
-            }
+            // TODO: Реализовать в Спринте 5 с CartRepository
+            Log.d("ProductDetailViewModel", "Добавление в корзину: ${product.title}")
+            _events.emit(ProductDetailEvent.AddedToCart(product.title))
         }
     }
 }
@@ -77,4 +59,9 @@ sealed interface ProductDetailUiState {
     data class Error(
         val message: String,
     ) : ProductDetailUiState
+}
+
+sealed interface ProductDetailEvent {
+    data class AddedToCart(val productName: String) : ProductDetailEvent
+    data class Error(val message: String) : ProductDetailEvent
 }

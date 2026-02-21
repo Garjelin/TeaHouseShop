@@ -1,0 +1,61 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="400dp"
+    android:height="400dp"
+    android:viewportWidth="400"
+    android:viewportHeight="400">
+    
+    <!-- Background gradient simulation -->
+    <path
+        android:fillColor="#E8F5E9"
+        android:pathData="M0,0h400v400h-400z"/>
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M0,200h400v200h-400z"/>
+    
+    <!-- Decorative circle -->
+    <path
+        android:fillColor="#A5D6A7"
+        android:pathData="M200,200m-150,0a150,150 0,1 1,300 0a150,150 0,1 1,-300 0"/>
+    
+    <!-- Tea cup body -->
+    <path
+        android:fillColor="#4A7C59"
+        android:pathData="M120,160 L280,160 L260,300 C255,320 245,330 200,330 C155,330 145,320 140,300 Z"/>
+    
+    <!-- Cup rim -->
+    <path
+        android:fillColor="#3D6B4A"
+        android:pathData="M110,150 L290,150 L290,170 L110,170 Z"/>
+    
+    <!-- Tea liquid -->
+    <path
+        android:fillColor="#81C784"
+        android:pathData="M130,175 L270,175 L255,280 C252,295 245,300 200,300 C155,300 148,295 145,280 Z"/>
+    
+    <!-- Cup handle -->
+    <path
+        android:fillColor="#4A7C59"
+        android:pathData="M280,180 Q330,180 330,230 Q330,280 280,280 L280,260 Q305,260 305,230 Q305,200 280,200 Z"/>
+    
+    <!-- Steam -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M160,130 Q155,100 170,70 Q175,100 160,130"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M200,120 Q195,85 210,55 Q215,85 200,120"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M240,130 Q235,100 250,70 Q255,100 240,130"/>
+    
+    <!-- Tea leaf decoration -->
+    <path
+        android:fillColor="#2E7D32"
+        android:pathData="M200,210 Q230,230 220,270 Q200,285 180,270 Q170,230 200,210 Z"/>
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M200,220 L200,270"/>
+</vector>

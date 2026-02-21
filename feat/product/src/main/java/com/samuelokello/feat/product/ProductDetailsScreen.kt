@@ -44,13 +44,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.samuelokello.core.domain.model.Product
 import org.koin.androidx.compose.koinViewModel
@@ -84,9 +89,25 @@ fun ProductDetailsScreen(
     productId: Int,
 ) {
     val state by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(productId) {
         viewModel.getProductById(productId)
+    }
+    
+    // Обработка событий
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is ProductDetailEvent.AddedToCart -> {
+                    snackbarHostState.showSnackbar("${event.productName} добавлен в корзину")
+                }
+                is ProductDetailEvent.Error -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
     }
 
     Box(
@@ -133,6 +154,19 @@ fun ProductDetailsScreen(
                 )
             }
         }
+        
+        // Snackbar для уведомлений
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = TeaGreen,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(12.dp),
+            )
+        }
     }
 }
 
@@ -158,7 +192,7 @@ fun ProductDetail(
                 .aspectRatio(1f)
                 .background(TeaCream),
         ) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(product.image)
                     .crossfade(true)
@@ -169,6 +203,32 @@ fun ProductDetail(
                     .fillMaxSize()
                     .padding(24.dp)
                     .clip(RoundedCornerShape(24.dp)),
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.LocalCafe,
+                            contentDescription = null,
+                            tint = TeaGreen.copy(alpha = 0.3f),
+                            modifier = Modifier.size(64.dp),
+                        )
+                    }
+                },
+                error = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.LocalCafe,
+                            contentDescription = null,
+                            tint = TeaGreen,
+                            modifier = Modifier.size(64.dp),
+                        )
+                    }
+                },
             )
             
             // Кнопка избранного
@@ -209,15 +269,13 @@ fun ProductDetail(
         
         // Информация о товаре
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
             color = Color.White,
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(24.dp),
             ) {
                 // Название и рейтинг
@@ -308,7 +366,7 @@ fun ProductDetail(
                     ),
                 )
                 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(24.dp))
                 
                 // Нижняя панель с ценой и кнопкой
                 Row(

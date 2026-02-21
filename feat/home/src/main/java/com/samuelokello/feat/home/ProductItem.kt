@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.LocalCafe
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -49,7 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.samuelokello.core.domain.model.Product
 
@@ -115,7 +116,7 @@ fun ProductItem(
                         )
                     ),
             ) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(product.image)
                         .crossfade(true)
@@ -126,6 +127,34 @@ fun ProductItem(
                         .fillMaxSize()
                         .padding(12.dp)
                         .clip(RoundedCornerShape(12.dp)),
+                    loading = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.LocalCafe,
+                                contentDescription = null,
+                                tint = TeaGreen.copy(alpha = 0.3f),
+                                modifier = Modifier.size(48.dp),
+                            )
+                        }
+                    },
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(TeaCream),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.LocalCafe,
+                                contentDescription = null,
+                                tint = TeaGreen,
+                                modifier = Modifier.size(48.dp),
+                            )
+                        }
+                    },
                 )
                 
                 // Кнопка избранного

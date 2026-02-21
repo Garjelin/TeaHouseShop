@@ -325,3 +325,5 @@ val filteredProducts = remember(searchQuery, products) {
 **Дата составления отчёта:** 21 февраля 2026 г.  
 **Подпись:** Якимов С.А.
 
+
+
