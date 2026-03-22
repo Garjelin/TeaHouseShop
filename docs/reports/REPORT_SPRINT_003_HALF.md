@@ -327,3 +327,4 @@ val filteredProducts = remember(searchQuery, products) {
 
 
 
+
