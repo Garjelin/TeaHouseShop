@@ -21,6 +21,19 @@ class ProductRepositoryImpl(
         return localSource.getProducts()
     }
 
+    override fun observeCategories(): Flow<List<String>> = localSource.observeCategories()
+
+    override suspend fun getProductsPage(
+        offset: Int,
+        limit: Int,
+        category: String?,
+    ): List<Product> = localSource.getProductsPage(offset, limit, category)
+
+    override suspend fun countProducts(category: String?): Int = localSource.countProducts(category)
+
+    override suspend fun searchProductsByTitle(query: String): List<Product> =
+        localSource.searchProductsByTitle(query)
+
     override fun searchProductsWithFilters(
         query: String,
         minPrice: Double?,

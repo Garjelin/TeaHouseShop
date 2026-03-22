@@ -11,6 +11,18 @@ import kotlinx.coroutines.flow.map
 interface ProductLocalSource {
     fun getProducts(): Flow<List<Product>>
 
+    fun observeCategories(): Flow<List<String>>
+
+    suspend fun getProductsPage(
+        offset: Int,
+        limit: Int,
+        category: String?,
+    ): List<Product>
+
+    suspend fun countProducts(category: String?): Int
+
+    suspend fun searchProductsByTitle(query: String): List<Product>
+
     suspend fun insertProducts(products: List<Product>)
     
     suspend fun insertProduct(product: Product)
@@ -35,6 +47,37 @@ class ProductLocalSourceImpl(
         return dao.getAllProducts().map { entities ->
             entities.toDomain()
         }
+    }
+
+    override fun observeCategories(): Flow<List<String>> {
+        return dao.observeCategoryLabels().map { rows -> rows.map { it.category } }
+    }
+
+    override suspend fun getProductsPage(
+        offset: Int,
+        limit: Int,
+        category: String?,
+    ): List<Product> {
+        val entities =
+            if (category.isNullOrBlank()) {
+                dao.getProductsPaged(limit, offset)
+            } else {
+                dao.getProductsPagedByCategory(category, limit, offset)
+            }
+        return entities.toDomain()
+    }
+
+    override suspend fun countProducts(category: String?): Int {
+        return if (category.isNullOrBlank()) {
+            dao.countAllProducts()
+        } else {
+            dao.countProductsInCategory(category)
+        }
+    }
+
+    override suspend fun searchProductsByTitle(query: String): List<Product> {
+        if (query.isBlank()) return emptyList()
+        return dao.searchProducts(query).toDomain()
     }
 
     override suspend fun insertProducts(products: List<Product>) {

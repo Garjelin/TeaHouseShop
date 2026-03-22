@@ -37,4 +37,28 @@ interface ProductDao {
         limit: Int,
         offset: Int,
     ): List<ProductEntity>
+
+    @Query("SELECT * FROM products ORDER BY id ASC LIMIT :limit OFFSET :offset")
+    suspend fun getProductsPaged(
+        limit: Int,
+        offset: Int,
+    ): List<ProductEntity>
+
+    @Query(
+        "SELECT * FROM products WHERE category = :category ORDER BY id ASC LIMIT :limit OFFSET :offset",
+    )
+    suspend fun getProductsPagedByCategory(
+        category: String,
+        limit: Int,
+        offset: Int,
+    ): List<ProductEntity>
+
+    @Query("SELECT COUNT(*) FROM products")
+    suspend fun countAllProducts(): Int
+
+    @Query("SELECT COUNT(*) FROM products WHERE category = :category")
+    suspend fun countProductsInCategory(category: String): Int
+
+    @Query("SELECT DISTINCT category FROM products ORDER BY category COLLATE NOCASE ASC")
+    fun observeCategoryLabels(): Flow<List<CategoryLabel>>
 }

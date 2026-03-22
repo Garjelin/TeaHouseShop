@@ -24,16 +24,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.items as lazyGridItems
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items as lazyRowItems
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.LocalCafe
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -41,12 +47,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +64,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.samuelokello.core.domain.model.Product
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import org.koin.androidx.compose.koinViewModel
 
 // Цвета для чайной тематики
@@ -129,14 +138,26 @@ fun HomeScreen(
             exit = fadeOut(),
         ) {
             if (state is HomeUiState.Success) {
-                val products = (state as HomeUiState.Success).products
-                if (products.isEmpty()) {
-                    EmptyScreen()
-                } else {
-                    ProductList(
-                        products = products,
-                        navigateToItemDetails = navigateToItemDetails,
-                    )
+                val success = state as HomeUiState.Success
+                when {
+                    success.products.isEmpty() && success.isLoadingMore -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(color = TeaGreen)
+                        }
+                    }
+                    success.products.isEmpty() -> EmptyScreen()
+                    else -> {
+                        ProductList(
+                            state = success,
+                            onCategorySelected = viewModel::selectCategory,
+                            onSearchQueryChange = viewModel::onSearchQueryChange,
+                            onLoadMore = viewModel::loadMore,
+                            navigateToItemDetails = navigateToItemDetails,
+                        )
+                    }
                 }
             }
         }
@@ -147,23 +168,36 @@ fun HomeScreen(
 @Composable
 fun ProductList(
     modifier: Modifier = Modifier,
-    products: List<Product>,
+    state: HomeUiState.Success,
+    onCategorySelected: (String?) -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onLoadMore: () -> Unit,
     navigateToItemDetails: (productId: Int) -> Unit,
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    
-    val filteredProducts = remember(searchQuery, products) {
-        if (searchQuery.isBlank()) {
-            products
-        } else {
-            products.filter { 
-                it.title.contains(searchQuery, ignoreCase = true) ||
-                it.category.contains(searchQuery, ignoreCase = true)
+    val gridState = rememberLazyGridState()
+    val products = state.products
+
+    LaunchedEffect(gridState, products.size, state.hasMore, state.isLoadingMore, state.searchQuery) {
+        snapshotFlow {
+            val info = gridState.layoutInfo
+            if (info.visibleItemsInfo.isEmpty()) {
+                false
+            } else {
+                val lastVisible = info.visibleItemsInfo.last().index
+                val threshold = (info.totalItemsCount - 4).coerceAtLeast(0)
+                lastVisible >= threshold
             }
         }
+            .map { nearEnd -> nearEnd && state.searchQuery.isBlank() && state.hasMore && !state.isLoadingMore }
+            .distinctUntilChanged()
+            .filter { it }
+            .collect {
+                onLoadMore()
+            }
     }
 
     LazyVerticalGrid(
+        state = gridState,
         columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -205,11 +239,48 @@ fun ProductList(
             }
         }
         
+        // Категории
+        item(span = { GridItemSpan(2) }) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                item {
+                    FilterChip(
+                        selected = state.selectedCategory == null,
+                        onClick = { onCategorySelected(null) },
+                        label = { Text("Все") },
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = TeaGreen.copy(alpha = 0.22f),
+                                selectedLabelColor = TeaBrown,
+                                containerColor = Color.White,
+                                labelColor = Color(0xFF2D3436),
+                            ),
+                    )
+                }
+                lazyRowItems(state.categories, key = { it }) { category ->
+                    FilterChip(
+                        selected = state.selectedCategory == category,
+                        onClick = { onCategorySelected(category) },
+                        label = { Text(category) },
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = TeaGreen.copy(alpha = 0.22f),
+                                selectedLabelColor = TeaBrown,
+                                containerColor = Color.White,
+                                labelColor = Color(0xFF2D3436),
+                            ),
+                    )
+                }
+            }
+        }
+
         // Поиск
         item(span = { GridItemSpan(2) }) {
             TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
+                value = state.searchQuery,
+                onValueChange = onSearchQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp)),
@@ -254,7 +325,7 @@ fun ProductList(
                     ),
                 )
                 Text(
-                    text = "${filteredProducts.size} товаров",
+                    text = "${products.size} товаров",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color(0xFF7F8C8D),
                     ),
@@ -263,16 +334,34 @@ fun ProductList(
         }
 
         // Товары
-        items(
-            items = filteredProducts,
-            key = { it.id }
+        lazyGridItems(
+            items = products,
+            key = { it.id },
         ) { product ->
             ProductItem(
                 product = product,
                 navigateToItemDetails = { navigateToItemDetails(product.id) },
             )
         }
-        
+
+        if (state.isLoadingMore) {
+            item(span = { GridItemSpan(2) }) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        color = TeaGreen,
+                        strokeWidth = 3.dp,
+                    )
+                }
+            }
+        }
+
         // Отступ внизу
         item(span = { GridItemSpan(2) }) {
             Spacer(modifier = Modifier.height(80.dp))

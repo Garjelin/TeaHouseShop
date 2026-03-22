@@ -10,9 +10,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a5ad707-2e12-43c8-b105-47c14651830c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/java/com/samuelokello/data/repository/ProductRepositoryImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/java/com/samuelokello/data/repository/ProductRepositoryImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/java/com/samuelokello/data/repository/di/DataModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/java/com/samuelokello/data/repository/di/DataModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/datasource/local/src/main/java/com/samuelokello/datasource/local/db/product/ProductDao.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/datasource/local/src/main/java/com/samuelokello/datasource/local/db/product/ProductDao.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/datasource/local/src/main/java/com/samuelokello/datasource/local/source/product/ProductLocalSource.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/datasource/local/src/main/java/com/samuelokello/datasource/local/source/product/ProductLocalSource.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/java/com/samuelokello/core/domain/repository/ProductRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/java/com/samuelokello/core/domain/repository/ProductRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DEVELOPMENT_PLAN.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/DEVELOPMENT_PLAN.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/reports/REPORT_SPRINT_003_HALF.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/reports/REPORT_SPRINT_003_HALF.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feat/home/src/main/java/com/samuelokello/feat/home/HomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feat/home/src/main/java/com/samuelokello/feat/home/HomeScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feat/home/src/main/java/com/samuelokello/feat/home/HomeViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feat/home/src/main/java/com/samuelokello/feat/home/HomeViewModel.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
