@@ -3,6 +3,7 @@ package com.samuelokello.datasource.local.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.samuelokello.datasource.local.db.product.ProductDao
+import com.samuelokello.datasource.local.db.user.LocalUserAccountDao
 import com.samuelokello.datasource.local.entity.DimensionsEntity
 import com.samuelokello.datasource.local.entity.MetaEntity
 import com.samuelokello.datasource.local.entity.ReviewEntity
@@ -13,6 +14,7 @@ import com.samuelokello.datasource.local.entity.category.CategoryEntity
 import com.samuelokello.datasource.local.entity.product.ProductEntity
 import com.samuelokello.datasource.local.entity.product.ProductImageEntity
 import com.samuelokello.datasource.local.entity.product.ProductTagCrossRef
+import com.samuelokello.datasource.local.entity.user.LocalUserAccountEntity
 import com.samuelokello.datasource.local.entity.user.UserEntity
 
 @Database(
@@ -28,10 +30,13 @@ import com.samuelokello.datasource.local.entity.user.UserEntity
         ReviewEntity::class,
         TagEntity::class,
         UserEntity::class,
+        LocalUserAccountEntity::class,
     ],
-    version = 1,
+    version = 2,
     autoMigrations = [],
 )
 abstract class ShopSpotDB : RoomDatabase() {
     abstract fun productDao(): ProductDao
+
+    abstract fun localUserAccountDao(): LocalUserAccountDao
 }

@@ -4,17 +4,16 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.samuelokello.core.domain.model.LoginResponse
-import com.samuelokello.core.domain.model.UserCredentials
-import com.samuelokello.core.domain.repository.AuthenticationRepository
-import com.samuelokello.core.domain.util.DataError
+import com.samuelokello.core.domain.usecase.auth.LoginUseCase
 import com.samuelokello.core.domain.util.Result
+import com.samuelokello.feat.auth.presentation.AuthValidation
+import com.samuelokello.feat.auth.presentation.toDisplayMessage
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val repository: AuthenticationRepository,
+    private val loginUseCase: LoginUseCase,
 ) : ViewModel() {
     private val _uiState = mutableStateOf(LoginUiState())
     val uiState: State<LoginUiState> = _uiState
@@ -24,18 +23,18 @@ class LoginViewModel(
 
     fun onEvent(event: LoginEvent) {
         when (event) {
-            is LoginEvent.UsernameChanged -> {
+            is LoginEvent.EmailChanged -> {
                 _uiState.value =
                     _uiState.value.copy(
-                        username = event.value,
-                        usernameError = validateUsername(event.value),
+                        email = event.value,
+                        emailError = validateEmailField(event.value),
                     )
             }
             is LoginEvent.PasswordChanged -> {
                 _uiState.value =
                     _uiState.value.copy(
                         password = event.value,
-                        passwordError = validatePassword(event.value),
+                        passwordError = validatePasswordField(event.value),
                     )
             }
             is LoginEvent.RememberMeChanged -> {
@@ -49,75 +48,66 @@ class LoginViewModel(
         if (!validateInputs()) return
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            repository
-                .login(
-                    UserCredentials(
-                        username = _uiState.value.username,
+            when (
+                val result =
+                    loginUseCase(
+                        email = _uiState.value.email.trim(),
                         password = _uiState.value.password,
-                    ),
-                ).collect { result ->
-                    when (result) {
-                        is Result.Error<DataError.Network> -> {
-                        }
-                        is Result.Success<LoginResponse> -> {
-                            _uiState.value =
-                                _uiState.value.copy(
-                                    isLoading = false,
-                                    error = null,
-                                )
-                            _navigationEvent.emit("home")
-                        }
-                    }
+                    )
+            ) {
+                is Result.Success -> {
+                    _uiState.value =
+                        _uiState.value.copy(
+                            isLoading = false,
+                            error = null,
+                        )
+                    _navigationEvent.emit("home")
                 }
-
-//            catch (e: Exception) {
-//                val errorMessage =
-//                    when (e) {
-//                        is IOException -> "Network error. Check your connection."
-//                        is HttpException -> "Invalid credentials"
-//                        else -> e.localizedMessage ?: "Unknown error occurred"
-//                    }
-//                _uiState.value = _uiState.value.copy(error = errorMessage)
-//            } finally {
-//                _uiState.value = _uiState.value.copy(isLoading = false)
-//            }
+                is Result.Error -> {
+                    _uiState.value =
+                        _uiState.value.copy(
+                            isLoading = false,
+                            error = result.error.toDisplayMessage(),
+                        )
+                }
+            }
         }
     }
 
     private fun validateInputs(): Boolean {
-        val usernameError = validateUsername(_uiState.value.username)
-        val passwordError = validatePassword(_uiState.value.password)
+        val emailError = validateEmailField(_uiState.value.email)
+        val passwordError = validatePasswordField(_uiState.value.password)
 
         _uiState.value =
             _uiState.value.copy(
-                usernameError = usernameError,
+                emailError = emailError,
                 passwordError = passwordError,
             )
 
-        return usernameError == null && passwordError == null
+        return emailError == null && passwordError == null
     }
 
-    private fun validateUsername(username: String): String? =
+    private fun validateEmailField(email: String): String? =
         when {
-            username.isBlank() -> "Username required"
-            username.length < 3 -> "Username too short"
+            email.isBlank() -> "Введите email"
+            !AuthValidation.isValidEmail(email) -> "Некорректный email"
             else -> null
         }
 
-    private fun validatePassword(password: String): String? =
+    private fun validatePasswordField(password: String): String? =
         when {
-            password.isBlank() -> "Password required"
-            password.length < 6 -> "Password too short"
+            password.isBlank() -> "Введите пароль"
+            password.length < 6 -> "Минимум 6 символов"
             else -> null
         }
 }
 
 data class LoginUiState(
-    val username: String = "",
+    val email: String = "",
     val password: String = "",
-    val usernameError: String? = null,
+    val emailError: String? = null,
     val passwordError: String? = null,
     val rememberMe: Boolean = false,
     val isLoading: Boolean = false,
@@ -125,7 +115,7 @@ data class LoginUiState(
 )
 
 sealed class LoginEvent {
-    data class UsernameChanged(
+    data class EmailChanged(
         val value: String,
     ) : LoginEvent()
 

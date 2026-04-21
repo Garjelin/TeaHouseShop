@@ -22,4 +22,12 @@ sealed interface DataError : Error {
         INVALID_DATA_FORMAT,
         PERMISSION_DENIED,
     }
+
+    enum class Auth : DataError {
+        EMAIL_ALREADY_EXISTS,
+        INVALID_CREDENTIALS,
+        WEAK_PASSWORD,
+        INVALID_EMAIL,
+        UNKNOWN,
+    }
 }

@@ -3,6 +3,7 @@ package com.samuelokello.datasource.local.di
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.samuelokello.datasource.local.db.MIGRATION_1_2
 import com.samuelokello.datasource.local.db.ShopSpotDB
 import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSource
 import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSourceImpl
@@ -10,6 +11,8 @@ import com.samuelokello.datasource.local.source.preference.PreferenceHelper
 import com.samuelokello.datasource.local.source.preference.PreferencesHelperImpl
 import com.samuelokello.datasource.local.source.product.ProductLocalSource
 import com.samuelokello.datasource.local.source.product.ProductLocalSourceImpl
+import com.samuelokello.datasource.local.source.user.LocalUserAccountSource
+import com.samuelokello.datasource.local.source.user.LocalUserAccountSourceImpl
 import com.samuelokello.datasource.local.util.MockDataInitializer
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
@@ -29,7 +32,8 @@ val localDataSourceModule =
                     context = androidContext(),
                     klass = ShopSpotDB::class.java,
                     name = "shopspot.db",
-                ).build()
+                ).addMigrations(MIGRATION_1_2)
+                .build()
         }
 
         single<PreferenceHelper>(LocalQualifier) {
@@ -46,6 +50,15 @@ val localDataSourceModule =
 
         // Product DAO
         single { get<ShopSpotDB>().productDao() }
+
+        single { get<ShopSpotDB>().localUserAccountDao() }
+
+        single<LocalUserAccountSource> {
+            LocalUserAccountSourceImpl(
+                dao = get(),
+                sessionPreferences = get(LocalQualifier),
+            )
+        }
 
         // Product Local Source
         single<ProductLocalSource> {

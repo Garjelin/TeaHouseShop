@@ -52,7 +52,7 @@ fun LoginScreen(
 
     LoginScreenContent(
         uiState = uiState,
-        onUsernameChange = { viewModel.onEvent(LoginEvent.UsernameChanged(it)) },
+        onEmailChange = { viewModel.onEvent(LoginEvent.EmailChanged(it)) },
         onPasswordChange = { viewModel.onEvent(LoginEvent.PasswordChanged(it)) },
         onRememberMeChange = { viewModel.onEvent(LoginEvent.RememberMeChanged(it)) },
         onForgotPasswordClick = navigateToForgotPassword,
@@ -67,7 +67,7 @@ fun LoginScreen(
 @Composable
 private fun LoginScreenContent(
     uiState: LoginUiState,
-    onUsernameChange: (String) -> Unit,
+    onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onRememberMeChange: (Boolean) -> Unit,
     onForgotPasswordClick: () -> Unit,
@@ -77,22 +77,22 @@ private fun LoginScreenContent(
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
     ) {
-        item { Text(text = "Welcome Back") }
+        item { Text(text = "С возвращением") }
 
         item {
             Spacer(modifier = Modifier.height(64.dp))
             Column {
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = uiState.username,
-                    onValueChange = onUsernameChange,
-                    label = { Text(text = "Username") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    value = uiState.email,
+                    onValueChange = onEmailChange,
+                    label = { Text(text = "Email") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     maxLines = 1,
                     singleLine = true,
-                    isError = uiState.usernameError != null,
+                    isError = uiState.emailError != null,
                 )
-                uiState.usernameError?.let { error ->
+                uiState.emailError?.let { error ->
                     Text(
                         text = error,
                         style = MaterialTheme.typography.bodyLarge,
@@ -111,7 +111,7 @@ private fun LoginScreenContent(
                     modifier = Modifier.fillMaxWidth(),
                     value = uiState.password,
                     onValueChange = onPasswordChange,
-                    label = { Text(text = "Password") },
+                    label = { Text(text = "Пароль") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     maxLines = 1,
                     singleLine = true,
@@ -144,10 +144,10 @@ private fun LoginScreenContent(
                         checked = uiState.rememberMe,
                         onCheckedChange = onRememberMeChange,
                     )
-                    Text(text = "Remember me", fontSize = 12.sp)
+                    Text(text = "Запомнить меня", fontSize = 12.sp)
                 }
                 TextButton(onClick = onForgotPasswordClick) {
-                    Text(text = "Forgot password?")
+                    Text(text = "Забыли пароль?")
                 }
             }
         }
@@ -156,7 +156,7 @@ private fun LoginScreenContent(
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = onSignInClick,
-                shape = RoundedCornerShape(8),
+                shape = RoundedCornerShape(8.dp),
                 enabled = !uiState.isLoading,
             ) {
                 Text(
@@ -164,7 +164,7 @@ private fun LoginScreenContent(
                         Modifier
                             .fillMaxWidth()
                             .padding(12.dp),
-                    text = "Sign In",
+                    text = "Войти",
                     textAlign = TextAlign.Center,
                 )
             }
@@ -179,7 +179,7 @@ private fun LoginScreenContent(
                 Text(
                     text =
                         buildAnnotatedString {
-                            append("Don't have an account? ")
+                            append("Нет аккаунта? ")
                             withStyle(
                                 style =
                                     SpanStyle(
@@ -187,7 +187,7 @@ private fun LoginScreenContent(
                                         fontWeight = FontWeight.Bold,
                                     ),
                             ) {
-                                append("Sign Up")
+                                append("Регистрация")
                             }
                         },
                     textAlign = TextAlign.Center,

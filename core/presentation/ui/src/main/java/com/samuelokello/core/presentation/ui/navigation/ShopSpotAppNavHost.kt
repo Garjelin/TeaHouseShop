@@ -140,6 +140,7 @@ fun ShopSpotAppNavHost(navigationViewModel: NavigationViewModel = viewModel()) {
             composable(Screens.Register.route) {
                 RegisterScreen(
                     navigateToLogin = { navController.navigate(Screens.Login.route) },
+                    navigateToHome = { navController.navigate(Screens.Home.route) },
                 )
             }
             composable(Screens.Login.route) {
