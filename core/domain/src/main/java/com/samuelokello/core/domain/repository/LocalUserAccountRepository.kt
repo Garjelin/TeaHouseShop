@@ -21,6 +21,11 @@ interface LocalUserAccountRepository {
         password: String,
     ): Result<UserProfile, DataError.Auth>
 
+    suspend fun resetPassword(
+        email: String,
+        newPassword: String,
+    ): Result<Unit, DataError.Auth>
+
     suspend fun logout()
 
     fun observeCurrentUser(): Flow<UserProfile?>

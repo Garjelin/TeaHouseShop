@@ -26,6 +26,7 @@ sealed interface DataError : Error {
     enum class Auth : DataError {
         EMAIL_ALREADY_EXISTS,
         INVALID_CREDENTIALS,
+        USER_NOT_FOUND,
         WEAK_PASSWORD,
         INVALID_EMAIL,
         UNKNOWN,

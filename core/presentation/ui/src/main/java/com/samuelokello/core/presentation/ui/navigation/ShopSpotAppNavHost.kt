@@ -151,7 +151,10 @@ fun ShopSpotAppNavHost(navigationViewModel: NavigationViewModel = viewModel()) {
                 )
             }
             composable(Screens.ForgotPassword.route) {
-                ForgotPasswordScreen(modifier = Modifier)
+                ForgotPasswordScreen(
+                    modifier = Modifier,
+                    navigateToLogin = { navController.popBackStack() },
+                )
             }
             composable(Screens.Home.route) {
                 HomeScreen(
@@ -181,7 +184,15 @@ fun ShopSpotAppNavHost(navigationViewModel: NavigationViewModel = viewModel()) {
                 FavouriteScreen(modifier = Modifier)
             }
             composable(Screens.Profile.route) {
-                ProfileScreen(modifier = Modifier)
+                ProfileScreen(
+                    modifier = Modifier,
+                    navigateToLogin = {
+                        navController.navigate(Screens.Login.route) {
+                            popUpTo(Screens.Profile.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                )
             }
             composable(Screens.OrderPlaced.route) {
                 OrderPlacedScreen(navigateBack = { navController.popBackStack() })

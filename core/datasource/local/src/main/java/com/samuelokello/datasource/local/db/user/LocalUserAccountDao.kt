@@ -16,4 +16,17 @@ interface LocalUserAccountDao {
 
     @Query("SELECT * FROM local_user_accounts WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): LocalUserAccountEntity?
+
+    @Query(
+        """
+        UPDATE local_user_accounts
+        SET passwordHash = :passwordHash, salt = :salt
+        WHERE email = :email
+        """,
+    )
+    suspend fun updatePasswordByEmail(
+        email: String,
+        passwordHash: String,
+        salt: String,
+    ): Int
 }

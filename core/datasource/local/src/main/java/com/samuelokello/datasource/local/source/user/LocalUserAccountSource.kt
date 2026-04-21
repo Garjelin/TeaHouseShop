@@ -14,6 +14,12 @@ interface LocalUserAccountSource {
 
     suspend fun getById(id: Long): LocalUserAccountEntity?
 
+    suspend fun updatePasswordByEmail(
+        email: String,
+        passwordHash: String,
+        salt: String,
+    ): Boolean
+
     fun observeCurrentUserId(): Flow<Long?>
 
     suspend fun setCurrentUserId(id: Long?)
@@ -30,6 +36,12 @@ class LocalUserAccountSourceImpl(
     override suspend fun getByEmail(email: String): LocalUserAccountEntity? = dao.getByEmail(email)
 
     override suspend fun getById(id: Long): LocalUserAccountEntity? = dao.getById(id)
+
+    override suspend fun updatePasswordByEmail(
+        email: String,
+        passwordHash: String,
+        salt: String,
+    ): Boolean = dao.updatePasswordByEmail(email, passwordHash, salt) > 0
 
     override fun observeCurrentUserId(): Flow<Long?> =
         sessionPreferences.get(PreferenceKeys.CURRENT_LOCAL_USER_ID).map { s ->

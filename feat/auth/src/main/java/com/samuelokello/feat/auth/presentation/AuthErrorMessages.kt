@@ -6,6 +6,7 @@ internal fun DataError.Auth.toDisplayMessage(): String =
     when (this) {
         DataError.Auth.EMAIL_ALREADY_EXISTS -> "Этот email уже зарегистрирован"
         DataError.Auth.INVALID_CREDENTIALS -> "Неверный email или пароль"
+        DataError.Auth.USER_NOT_FOUND -> "Пользователь с таким email не найден"
         DataError.Auth.WEAK_PASSWORD ->
             "Пароль: минимум 8 символов и хотя бы одна цифра"
         DataError.Auth.INVALID_EMAIL -> "Некорректный email"

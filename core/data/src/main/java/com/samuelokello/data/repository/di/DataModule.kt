@@ -6,6 +6,7 @@ import com.samuelokello.core.domain.repository.ProductRepository
 import com.samuelokello.core.domain.usecase.auth.GetCurrentUserUseCase
 import com.samuelokello.core.domain.usecase.auth.LoginUseCase
 import com.samuelokello.core.domain.usecase.auth.LogoutUseCase
+import com.samuelokello.core.domain.usecase.auth.ResetPasswordUseCase
 import com.samuelokello.core.domain.usecase.auth.RegisterUseCase
 import com.samuelokello.core.domain.usecase.product.CountProductsUseCase
 import com.samuelokello.core.domain.usecase.product.GetCategoriesUseCase
@@ -49,6 +50,7 @@ val dataModule =
 
         factory { LoginUseCase(get()) }
         factory { RegisterUseCase(get()) }
+        factory { ResetPasswordUseCase(get()) }
         factory { LogoutUseCase(get()) }
         factory { GetCurrentUserUseCase(get()) }
     }
