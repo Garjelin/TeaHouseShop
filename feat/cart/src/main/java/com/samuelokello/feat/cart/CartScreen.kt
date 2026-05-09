@@ -25,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,6 +41,9 @@ import com.samuelokello.core.domain.model.CartItem
 import com.samuelokello.core.presentation.designsystem.components.ErrorView
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
+
+private fun formatRub(value: Double): String =
+    String.format(Locale("ru", "RU"), "%.2f ₽", value)
 
 @Composable
 fun CartScreen(
@@ -85,6 +89,7 @@ fun CartScreen(
                             viewModel.updateQuantity(productId, increase)
                         },
                         onRemoveItem = { viewModel.removeItem(it) },
+                        onClearCart = { viewModel.clearCart() },
                         onCheckout = navigateToCheckout,
                     )
                 }
@@ -99,6 +104,7 @@ fun CartContent(
     totalPrice: Double,
     onUpdateQuantity: (Int, Boolean) -> Unit,
     onRemoveItem: (Int) -> Unit,
+    onClearCart: () -> Unit,
     onCheckout: () -> Unit,
 ) {
     Column {
@@ -126,11 +132,11 @@ fun CartContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "${cartItems.size} Items :",
+                    text = "Товары (${cartItems.size} поз.)",
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Text(
-                    text = "${String.format(Locale.getDefault(), "%.2f", totalPrice)}0",
+                    text = formatRub(totalPrice),
                     style = MaterialTheme.typography.titleLarge,
                 )
             }
@@ -139,12 +145,12 @@ fun CartContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Shipping fee :",
-                    style = MaterialTheme.typography.titleLarge,
+                    text = "Доставка (оценка)",
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = " 60.00",
-                    style = MaterialTheme.typography.titleLarge,
+                    text = formatRub(60.0),
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
 
@@ -153,15 +159,24 @@ fun CartContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Total :",
+                    text = "Итого",
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Text(
-                    text = "₹${String.format(Locale.getDefault(), "%.2f", totalPrice + 60)}",
+                    text = formatRub(totalPrice + 60),
                     style = MaterialTheme.typography.titleLarge,
                 )
             }
         }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onClearCart,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Очистить корзину")
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
@@ -177,7 +192,7 @@ fun CartContent(
                     containerColor = MaterialTheme.colorScheme.primary,
                 ),
         ) {
-            Text("CHECKOUT")
+            Text("Оформить заказ")
         }
     }
 }
@@ -220,7 +235,7 @@ fun CartItemCard(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = "₹${item.product.price}",
+                text = formatRub(item.product.price),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -274,14 +289,14 @@ fun EmptyCartView(navigateToHome: () -> Unit) {
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = "Your cart is empty",
+            text = "Корзина пуста",
             style = MaterialTheme.typography.headlineMedium,
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = navigateToHome,
         ) {
-            Text("Continue Shopping")
+            Text("Перейти в каталог")
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.samuelokello.data.repository.di
 
 import com.samuelokello.core.domain.repository.AuthenticationRepository
+import com.samuelokello.core.domain.repository.CartRepository
 import com.samuelokello.core.domain.repository.LocalUserAccountRepository
 import com.samuelokello.core.domain.repository.ProductRepository
 import com.samuelokello.core.domain.usecase.auth.GetCurrentUserUseCase
@@ -16,6 +17,7 @@ import com.samuelokello.core.domain.usecase.product.GetProductsUseCase
 import com.samuelokello.core.domain.usecase.product.SearchProductsUseCase
 import com.samuelokello.data.repository.ProductRepositoryImpl
 import com.samuelokello.data.repository.repository.AuthenticationRepositoryImpl
+import com.samuelokello.data.repository.repository.CartRepositoryImpl
 import com.samuelokello.data.repository.repository.LocalUserAccountRepositoryImpl
 import org.koin.dsl.module
 
@@ -38,6 +40,10 @@ val dataModule =
             LocalUserAccountRepositoryImpl(
                 source = get(),
             )
+        }
+
+        single<CartRepository> {
+            CartRepositoryImpl()
         }
 
         // Use Cases

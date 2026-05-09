@@ -4,18 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samuelokello.core.domain.model.CartItem
 import com.samuelokello.core.domain.model.UserCart
+import com.samuelokello.core.domain.usecase.auth.GetCurrentUserUseCase
 import com.samuelokello.core.domain.repository.CartRepository
 import com.samuelokello.core.domain.repository.ProductRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlin.collections.sumOf
 
 class CartViewModel(
     private val cartRepository: CartRepository,
     private val productRepository: ProductRepository,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<CartUiState>(CartUiState.Loading)
     val uiState: StateFlow<CartUiState> = _uiState.asStateFlow()
@@ -26,15 +29,25 @@ class CartViewModel(
     private val _totalPrice = MutableStateFlow(0.0)
     val totalPrice: StateFlow<Double> = _totalPrice.asStateFlow()
 
+    private var cartUserId: Int = 0
+
     init {
-        fetchCartItems()
+        viewModelScope.launch {
+            getCurrentUserUseCase()
+                .map { profile -> profile?.id?.toInt() ?: 0 }
+                .distinctUntilChanged()
+                .collect { userId ->
+                    cartUserId = userId
+                    fetchCartItems(userId)
+                }
+        }
     }
 
-    private fun fetchCartItems() {
+    private fun fetchCartItems(userId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = CartUiState.Loading
             cartRepository
-                .getUserCarts(USER_ID) // Replace USER_ID with actual user ID
+                .getUserCarts(userId)
                 .collect { result ->
                     result.fold(
                         onSuccess = { carts ->
@@ -80,7 +93,7 @@ class CartViewModel(
             val newQuantity = if (increase) item.quantity + 1 else (item.quantity - 1).coerceAtLeast(1)
 
             cartRepository
-                .updateItemQuantity(USER_ID, productId, newQuantity)
+                .updateItemQuantity(cartUserId, productId, newQuantity)
                 .collect { result ->
                     result.fold(
                         onSuccess = { updatedCart ->
@@ -98,7 +111,7 @@ class CartViewModel(
     fun removeItem(productId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             cartRepository
-                .removeItemFromCart(USER_ID, productId)
+                .removeItemFromCart(cartUserId, productId)
                 .collect { result ->
                     result.fold(
                         onSuccess = { updatedCart ->
@@ -120,13 +133,17 @@ class CartViewModel(
     fun refreshCart() {
         viewModelScope.launch(Dispatchers.IO) {
             cartRepository
-                .refreshCarts(USER_ID)
+                .refreshCarts(cartUserId)
                 .collect { result ->
                     result.fold(
                         onSuccess = { carts ->
                             val latestCart = carts.maxByOrNull { it.date }
                             if (latestCart != null) {
                                 loadCartWithProducts(latestCart)
+                            } else {
+                                _cartItems.value = emptyList()
+                                calculateTotal()
+                                _uiState.value = CartUiState.Success(emptyList())
                             }
                         },
                         onFailure = { exception ->
@@ -140,7 +157,7 @@ class CartViewModel(
     fun clearCart() {
         viewModelScope.launch {
             cartRepository
-                .clearCart(USER_ID)
+                .clearCart(cartUserId)
                 .collect { result ->
                     result.fold(
                         onSuccess = {
@@ -156,9 +173,6 @@ class CartViewModel(
         }
     }
 
-    companion object {
-        private const val USER_ID = 1 // Replace with actual user ID from authentication
-    }
 }
 
 sealed interface CartUiState {

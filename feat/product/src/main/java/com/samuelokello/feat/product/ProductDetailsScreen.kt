@@ -53,9 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -90,7 +88,6 @@ fun ProductDetailsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(productId) {
         viewModel.getProductById(productId)
@@ -173,7 +170,7 @@ fun ProductDetailsScreen(
 @Composable
 fun ProductDetail(
     product: Product,
-    addToCart: (product: Product) -> Unit,
+    addToCart: (product: Product, quantity: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isFavorite by remember { mutableStateOf(product.isFavourite ?: false) }
@@ -452,7 +449,7 @@ fun ProductDetail(
                 
                 // Кнопка добавления в корзину
                 Button(
-                    onClick = { addToCart(product) },
+                    onClick = { addToCart(product, quantity) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
