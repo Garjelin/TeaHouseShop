@@ -7,6 +7,8 @@ import com.samuelokello.datasource.local.db.MIGRATION_1_2
 import com.samuelokello.datasource.local.db.ShopSpotDB
 import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSource
 import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSourceImpl
+import com.samuelokello.datasource.local.source.cart.CartLocalSource
+import com.samuelokello.datasource.local.source.cart.CartLocalSourceImpl
 import com.samuelokello.datasource.local.source.preference.PreferenceHelper
 import com.samuelokello.datasource.local.source.preference.PreferencesHelperImpl
 import com.samuelokello.datasource.local.source.product.ProductLocalSource
@@ -57,6 +59,12 @@ val localDataSourceModule =
             LocalUserAccountSourceImpl(
                 dao = get(),
                 sessionPreferences = get(LocalQualifier),
+            )
+        }
+
+        single<CartLocalSource> {
+            CartLocalSourceImpl(
+                preferences = get(LocalQualifier),
             )
         }
 

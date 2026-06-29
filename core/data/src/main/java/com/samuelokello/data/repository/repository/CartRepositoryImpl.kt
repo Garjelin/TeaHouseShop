@@ -3,20 +3,22 @@ package com.samuelokello.data.repository.repository
 import com.samuelokello.core.domain.model.CartProduct
 import com.samuelokello.core.domain.model.UserCart
 import com.samuelokello.core.domain.repository.CartRepository
+import com.samuelokello.datasource.local.source.cart.CartLocalSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Лёгкая in-memory корзина (Спринт 5, стартовый инкремент).
- * Данные живут до закрытия процесса приложения; дальше — Room/API в следующих частях спринта.
+ * Корзина в памяти процесса + снимок в DataStore (переживает перезапуск приложения).
  */
-class CartRepositoryImpl : CartRepository {
+class CartRepositoryImpl(
+    private val localSource: CartLocalSource,
+) : CartRepository {
     private val cartsByUser = ConcurrentHashMap<Int, UserCart>()
 
     override suspend fun getUserCarts(userId: Int): Flow<Result<List<UserCart>>> =
         flow {
-            emit(Result.success(listOfNotNull(cartsByUser[userId])))
+            emit(Result.success(listOfNotNull(loadCart(userId))))
         }
 
     override suspend fun addItemToCart(
@@ -29,7 +31,7 @@ class CartRepositoryImpl : CartRepository {
                 emit(Result.failure(IllegalArgumentException("Количество должно быть больше 0")))
                 return@flow
             }
-            val existing = cartsByUser[userId]
+            val existing = loadCart(userId)
             val products = existing?.products?.toMutableList() ?: mutableListOf()
             val idx = products.indexOfFirst { it.productId == productId }
             if (idx >= 0) {
@@ -46,7 +48,7 @@ class CartRepositoryImpl : CartRepository {
                     userId = userId,
                     v = 1,
                 )
-            cartsByUser[userId] = cart
+            persistCart(cart)
             emit(Result.success(cart))
         }
 
@@ -56,7 +58,7 @@ class CartRepositoryImpl : CartRepository {
     ): Flow<Result<UserCart>> =
         flow {
             val existing =
-                cartsByUser[userId] ?: run {
+                loadCart(userId) ?: run {
                     emit(Result.failure(NoSuchElementException("Корзина пуста")))
                     return@flow
                 }
@@ -66,7 +68,7 @@ class CartRepositoryImpl : CartRepository {
                     products = products,
                     date = System.currentTimeMillis().toString(),
                 )
-            cartsByUser[userId] = cart
+            persistCart(cart)
             emit(Result.success(cart))
         }
 
@@ -77,7 +79,7 @@ class CartRepositoryImpl : CartRepository {
     ): Flow<Result<UserCart>> =
         flow {
             val existing =
-                cartsByUser[userId] ?: run {
+                loadCart(userId) ?: run {
                     emit(Result.failure(NoSuchElementException("Корзина пуста")))
                     return@flow
                 }
@@ -98,18 +100,39 @@ class CartRepositoryImpl : CartRepository {
                     products = products,
                     date = System.currentTimeMillis().toString(),
                 )
-            cartsByUser[userId] = cart
+            persistCart(cart)
             emit(Result.success(cart))
         }
 
     override suspend fun clearCart(userId: Int): Flow<Result<Unit>> =
         flow {
             cartsByUser.remove(userId)
+            localSource.clearCart(userId)
             emit(Result.success(Unit))
         }
 
     override suspend fun refreshCarts(userId: Int): Flow<Result<List<UserCart>>> =
         flow {
-            emit(Result.success(listOfNotNull(cartsByUser[userId])))
+            cartsByUser.remove(userId)
+            emit(Result.success(listOfNotNull(loadCart(userId))))
         }
+
+    private suspend fun loadCart(userId: Int): UserCart? {
+        cartsByUser[userId]?.let { return it }
+        val fromDisk = localSource.loadCart(userId)
+        if (fromDisk != null) {
+            cartsByUser[userId] = fromDisk
+        }
+        return fromDisk
+    }
+
+    private suspend fun persistCart(cart: UserCart) {
+        if (cart.products.isEmpty()) {
+            cartsByUser.remove(cart.userId)
+            localSource.clearCart(cart.userId)
+        } else {
+            cartsByUser[cart.userId] = cart
+            localSource.saveCart(cart)
+        }
+    }
 }

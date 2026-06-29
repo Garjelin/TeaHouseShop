@@ -4,6 +4,8 @@ import com.samuelokello.core.domain.repository.AuthenticationRepository
 import com.samuelokello.core.domain.repository.CartRepository
 import com.samuelokello.core.domain.repository.LocalUserAccountRepository
 import com.samuelokello.core.domain.repository.ProductRepository
+import com.samuelokello.core.domain.usecase.cart.AddToCartUseCase
+import com.samuelokello.core.domain.usecase.cart.ClearCartUseCase
 import com.samuelokello.core.domain.usecase.auth.GetCurrentUserUseCase
 import com.samuelokello.core.domain.usecase.auth.LoginUseCase
 import com.samuelokello.core.domain.usecase.auth.LogoutUseCase
@@ -43,7 +45,9 @@ val dataModule =
         }
 
         single<CartRepository> {
-            CartRepositoryImpl()
+            CartRepositoryImpl(
+                localSource = get(),
+            )
         }
 
         // Use Cases
@@ -59,4 +63,7 @@ val dataModule =
         factory { ResetPasswordUseCase(get()) }
         factory { LogoutUseCase(get()) }
         factory { GetCurrentUserUseCase(get()) }
+
+        factory { AddToCartUseCase(get()) }
+        factory { ClearCartUseCase(get()) }
     }

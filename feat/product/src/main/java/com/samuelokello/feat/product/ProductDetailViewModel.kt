@@ -3,7 +3,7 @@ package com.samuelokello.feat.product
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samuelokello.core.domain.model.Product
-import com.samuelokello.core.domain.repository.CartRepository
+import com.samuelokello.core.domain.usecase.cart.AddToCartUseCase
 import com.samuelokello.core.domain.usecase.auth.GetCurrentUserUseCase
 import com.samuelokello.core.domain.usecase.product.GetProductByIdUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class ProductDetailViewModel(
     private val getProductByIdUseCase: GetProductByIdUseCase,
-    private val cartRepository: CartRepository,
+    private val addToCartUseCase: AddToCartUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow<ProductDetailUiState>(ProductDetailUiState.Loading)
@@ -54,7 +54,7 @@ class ProductDetailViewModel(
                     ?.id
                     ?.toInt()
                     ?: 0
-            cartRepository.addItemToCart(userId, product.id, qty).collect { result ->
+            addToCartUseCase(userId, product.id, qty).collect { result ->
                 result.fold(
                     onSuccess = {
                         _events.emit(ProductDetailEvent.AddedToCart(product.title))

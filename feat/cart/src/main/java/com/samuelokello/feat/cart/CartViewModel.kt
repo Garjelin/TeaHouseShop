@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samuelokello.core.domain.model.CartItem
 import com.samuelokello.core.domain.model.UserCart
+import com.samuelokello.core.domain.usecase.cart.ClearCartUseCase
 import com.samuelokello.core.domain.usecase.auth.GetCurrentUserUseCase
 import com.samuelokello.core.domain.repository.CartRepository
 import com.samuelokello.core.domain.repository.ProductRepository
@@ -19,6 +20,7 @@ class CartViewModel(
     private val cartRepository: CartRepository,
     private val productRepository: ProductRepository,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val clearCartUseCase: ClearCartUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<CartUiState>(CartUiState.Loading)
     val uiState: StateFlow<CartUiState> = _uiState.asStateFlow()
@@ -156,9 +158,7 @@ class CartViewModel(
 
     fun clearCart() {
         viewModelScope.launch {
-            cartRepository
-                .clearCart(cartUserId)
-                .collect { result ->
+            clearCartUseCase(cartUserId).collect { result ->
                     result.fold(
                         onSuccess = {
                             _cartItems.value = emptyList()
