@@ -27,7 +27,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.order.OrderPlacedScreen
 import com.samuelokello.core.domain.model.Screens
 import com.samuelokello.core.presentation.designsystem.components.ShopSpotTopAppBar
 import com.samuelokello.core.presentation.designsystem.components.bottomnav.SwipeAbleBottomNav
@@ -39,6 +38,8 @@ import com.samuelokello.feat.auth.presentation.register.RegisterScreen
 import com.samuelokello.feat.cart.CartScreen
 import com.samuelokello.feat.favourite.FavouriteScreen
 import com.samuelokello.feat.home.HomeScreen
+import com.samuelokello.feat.order.CheckoutScreen
+import com.samuelokello.feat.order.OrderPlacedScreen
 import com.samuelokello.feat.product.ProductDetailsScreen
 import com.samuelokello.feat.profile.ProfileScreen
 import com.samuelokello.feat.search.SearchScreen
@@ -168,8 +169,17 @@ fun ShopSpotAppNavHost(navigationViewModel: NavigationViewModel = viewModel()) {
             }
             composable(Screens.Cart.route) {
                 CartScreen(
-                    navigateToCheckout = { navController.navigate(Screens.OrderPlaced.route) },
+                    navigateToCheckout = { navController.navigate(Screens.Checkout.route) },
                     navigateToHome = { navController.navigate(Screens.Home.route) },
+                )
+            }
+            composable(Screens.Checkout.route) {
+                CheckoutScreen(
+                    navigateToOrderPlaced = { orderId ->
+                        navController.navigate("${Screens.OrderPlaced.route}/$orderId") {
+                            popUpTo(Screens.Cart.route) { inclusive = true }
+                        }
+                    },
                 )
             }
             composable(Screens.Search.route) {
@@ -194,8 +204,22 @@ fun ShopSpotAppNavHost(navigationViewModel: NavigationViewModel = viewModel()) {
                     },
                 )
             }
-            composable(Screens.OrderPlaced.route) {
-                OrderPlacedScreen(navigateBack = { navController.popBackStack() })
+            composable(
+                route = "${Screens.OrderPlaced.route}/{orderId}",
+                arguments = listOf(navArgument("orderId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId")
+                OrderPlacedScreen(
+                    orderId = orderId,
+                    navigateToHome = {
+                        navController.navigate(Screens.Home.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = false
+                            }
+                            launchSingleTop = true
+                        }
+                    },
+                )
             }
             composable(
                 route = "${Screens.ProductDetailsScreen.route}/{productId}",

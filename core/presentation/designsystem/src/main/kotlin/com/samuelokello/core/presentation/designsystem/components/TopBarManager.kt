@@ -50,7 +50,14 @@ fun topBarManager(
 
         Screens.Cart.route ->
             TopBarConfig(
-                title = "My Cart",
+                title = "Корзина",
+                topBarType = TopBarType.CenterAligned,
+                showBackIcon = true,
+            )
+
+        Screens.Checkout.route ->
+            TopBarConfig(
+                title = "Оформление",
                 topBarType = TopBarType.CenterAligned,
                 showBackIcon = true,
             )
@@ -87,8 +94,17 @@ fun topBarManager(
             )
 
         else ->
-            TopBarConfig(
-                title = "",
-                topBarType = TopBarType.Regular,
-            )
+            when {
+                currentRoute?.startsWith(Screens.OrderPlaced.route) == true ->
+                    TopBarConfig(
+                        title = "Готово",
+                        topBarType = TopBarType.CenterAligned,
+                        showBackIcon = false,
+                    )
+                else ->
+                    TopBarConfig(
+                        title = "",
+                        topBarType = TopBarType.Regular,
+                    )
+            }
     }

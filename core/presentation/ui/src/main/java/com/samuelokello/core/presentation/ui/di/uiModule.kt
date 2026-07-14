@@ -4,6 +4,7 @@ import com.samuelokello.feat.auth.di.authModule
 import com.samuelokello.feat.cart.di.cartModule
 import com.samuelokello.feat.favourite.favouritesModule
 import com.samuelokello.feat.home.di.homeModule
+import com.samuelokello.feat.order.di.orderModule
 import com.samuelokello.feat.product.di.productModule
 import com.samuelokello.feat.profile.di.profileModule
 import com.samuelokello.feat.search.di.searchModule
@@ -15,6 +16,7 @@ val featureModules =
         authModule,
         homeModule,
         cartModule,
+        orderModule,
         productModule,
         searchModule,
         profileModule,

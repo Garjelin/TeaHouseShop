@@ -1,4 +1,4 @@
-package com.example.order
+package com.samuelokello.feat.order
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,8 +22,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun OrderPlacedScreen(
-    navigateBack: () -> Unit,
-//    viewModel: OrderPlacedViewModel,
+    orderId: String? = null,
+    navigateToHome: () -> Unit,
 ) {
     Column(
         modifier =
@@ -36,44 +35,44 @@ fun OrderPlacedScreen(
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
-            contentDescription = "Order Placed",
+            contentDescription = null,
             modifier = Modifier.size(100.dp),
-//            tint = primaryLight,
+            tint = MaterialTheme.colorScheme.primary,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Order Placed Successfully!",
+            text = "Заказ оформлен!",
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "Thank you for your purchase.",
+            text = "Спасибо за покупку. Мы свяжемся с вами для подтверждения доставки.",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
         )
 
+        if (!orderId.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Номер: ${orderId.take(8).uppercase()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = {
-                //                viewModel.clearCart() // Clear the cart
-                //                navController.navigate(Screens.Home.route) {
-                //                    popUpTo(Screens.OrderPlaced.route) { inclusive = true }
-                //                }
-            },
-            colors =
-                ButtonDefaults.buttonColors(
-//                    containerColor = primaryLight,
-//                    contentColor = onPrimaryLight,
-                ),
-            modifier = Modifier.fillMaxWidth(0.7f),
+            onClick = navigateToHome,
+            modifier = Modifier.fillMaxWidth(0.75f),
         ) {
-            Text("Return to Products")
+            Text("Вернуться в каталог")
         }
     }
 }

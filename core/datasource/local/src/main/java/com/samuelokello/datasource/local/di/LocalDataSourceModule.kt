@@ -9,6 +9,8 @@ import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSource
 import com.samuelokello.datasource.local.source.auth.AuthenticationLocalSourceImpl
 import com.samuelokello.datasource.local.source.cart.CartLocalSource
 import com.samuelokello.datasource.local.source.cart.CartLocalSourceImpl
+import com.samuelokello.datasource.local.source.order.OrderLocalSource
+import com.samuelokello.datasource.local.source.order.OrderLocalSourceImpl
 import com.samuelokello.datasource.local.source.preference.PreferenceHelper
 import com.samuelokello.datasource.local.source.preference.PreferencesHelperImpl
 import com.samuelokello.datasource.local.source.product.ProductLocalSource
@@ -64,6 +66,12 @@ val localDataSourceModule =
 
         single<CartLocalSource> {
             CartLocalSourceImpl(
+                preferences = get(LocalQualifier),
+            )
+        }
+
+        single<OrderLocalSource> {
+            OrderLocalSourceImpl(
                 preferences = get(LocalQualifier),
             )
         }
