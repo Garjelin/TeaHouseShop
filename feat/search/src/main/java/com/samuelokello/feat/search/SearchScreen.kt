@@ -1,6 +1,7 @@
 package com.samuelokello.feat.search
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,243 +9,225 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DockedSearchBar
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.samuelokello.core.domain.model.Product
+import com.samuelokello.core.domain.model.ProductSortOrder
 import org.koin.androidx.compose.koinViewModel
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = koinViewModel(),
     navigateToItemDetails: (product: Product) -> Unit,
 ) {
-    val searchUiState by viewModel.searchUiState.collectAsState()
-    val recentSearches by viewModel.getRecentSearches().collectAsState()
-
-    var searchText by rememberSaveable { mutableStateOf("") }
-    var suggestions by remember { mutableStateOf<List<String>>(emptyList()) }
-    var showSuggestions by remember { mutableStateOf(false) }
-
-    // Handle suggestion logic dynamically
-    LaunchedEffect(searchText) {
-        suggestions = viewModel.getSuggestions(query = searchText)
-        showSuggestions = suggestions.isNotEmpty()
-    }
+    val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
+    var filtersExpanded by rememberSaveable { mutableStateOf(false) }
+    val activeFiltersCount = uiState.activeFiltersCount()
 
     Column(
-        Modifier
-            .fillMaxSize()
-            .semantics { isTraversalGroup = true },
+        modifier = modifier.fillMaxSize(),
     ) {
-        // Search bar at the top
-        DockedSearchBar(
+        OutlinedTextField(
+            value = uiState.query,
+            onValueChange = viewModel::onQueryChange,
             modifier =
-                modifier
+                Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 16.dp),
-            inputField = {
-                SearchBarDefaults.InputField(
-                    query = searchText,
-                    onQueryChange = { query ->
-                        searchText = query
-                        viewModel.search(query = query)
-                    },
-                    onSearch = {
-                        viewModel.addToHistory(searchText)
-                        viewModel.search(query = searchText)
-                    },
-                    placeholder = { Text("Search products...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    expanded = false,
-                    onExpandedChange = {},
-                )
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            placeholder = { Text("Поиск чая...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {
+                if (uiState.query.isNotBlank()) {
+                    IconButton(onClick = { viewModel.onQueryChange("") }) {
+                        Icon(Icons.Default.Close, contentDescription = "Очистить")
+                    }
+                }
             },
-            expanded = false,
-            onExpandedChange = { /* No need to expand dropdown */ },
-            content = {},
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Search,
+                ),
+            keyboardActions =
+                KeyboardActions(
+                    onSearch = {
+                        focusManager.clearFocus()
+                        viewModel.onSearchSubmit()
+                    },
+                ),
         )
 
-        // Suggestions box (Static dropdown)
-        if (suggestions.isNotEmpty()) {
-            SuggestionBox(
-                suggestions = suggestions,
-                onSuggestionClicked = { query ->
-                    searchText = query
-                    viewModel.search(query = query)
-                },
-            )
-
-            HorizontalDivider(modifier.padding(vertical = 8.dp, horizontal = 12.dp))
-        }
-
-        if (recentSearches.isNotEmpty()) {
-            RecentSearchHistory(
-                recentSearches = recentSearches,
-                onDeleteItem = { query ->
-                    viewModel.removeFromHistory(query)
-                },
-                onItemClick = { query ->
-                    searchText = query
-                    viewModel.search(query = query)
-                },
-            )
-            HorizontalDivider(modifier.padding(vertical = 8.dp, horizontal = 12.dp))
-        }
-        // Search results container - LazyColumn for scroll only here
-        SearchResultsContainer(
-            searchUiState = searchUiState,
-            navigateToItemDetails = navigateToItemDetails,
-        )
-    }
-}
-
-@Composable
-fun SuggestionBox(
-    suggestions: List<String>,
-    onSuggestionClicked: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    LazyColumn(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(max = 200.dp),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        items(suggestions) { suggestion ->
-            Text(
-                text = suggestion,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable { onSuggestionClicked(suggestion) }
-                        .padding(8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black,
-            )
-        }
-    }
-}
-
-@Composable
-fun RecentSearchHistory(
-    recentSearches: List<String>,
-    onDeleteItem: (String) -> Unit,
-    onItemClick: (String) -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Recent Searches",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp),
-        )
-
-        recentSearches.forEach { item ->
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable { onItemClick(item) }
-                        .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(text = item)
-                IconButton(
-                    onClick = { onDeleteItem(item) },
-                ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete recent search")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SearchResultsContainer(
-    searchUiState: SearchUiState,
-    navigateToItemDetails: (product: Product) -> Unit,
-) {
-    LazyColumn(
-        contentPadding =
-            PaddingValues(
-                start = 16.dp,
-                top = 8.dp,
-                end = 16.dp,
-                bottom = 16.dp,
-            ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp),
-    ) {
-        when (searchUiState) {
-            is SearchUiState.Loading -> {
-                item {
-                    CircularProgressIndicator(
-                        Modifier
-//                            .fillMaxWidth()
-                            .padding(8.dp),
-                    )
-                }
-            }
-            is SearchUiState.Error -> {
-                item {
+        if (uiState.suggestions.isNotEmpty()) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                uiState.suggestions.forEach { suggestion ->
                     Text(
-                        text = searchUiState.message,
-                        color = Color.Red,
+                        text = suggestion,
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .clickable { viewModel.onSuggestionClick(suggestion) }
+                                .padding(vertical = 8.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
-            is SearchUiState.Success -> {
-                items(searchUiState.products) { product ->
-                    ProductItem(
-                        product = product,
-                        navigateToItemDetails = navigateToItemDetails,
-                    )
+        }
+
+        OutlinedButton(
+            onClick = { filtersExpanded = !filtersExpanded },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.Tune,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text =
+                    when {
+                        filtersExpanded -> "Скрыть фильтры"
+                        activeFiltersCount > 0 -> "Фильтры ($activeFiltersCount)"
+                        else -> "Фильтры и сортировка"
+                    },
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = if (filtersExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+
+        if (filtersExpanded) {
+            SearchFiltersPanel(
+                uiState = uiState,
+                onCategorySelected = viewModel::onCategorySelected,
+                onMinRatingSelected = viewModel::onMinRatingSelected,
+                onMinPriceChange = viewModel::onMinPriceChange,
+                onMaxPriceChange = viewModel::onMaxPriceChange,
+                onSortSelected = viewModel::onSortSelected,
+            )
+        }
+
+        if (uiState.recentSearches.isNotEmpty() && uiState.query.isBlank()) {
+            Text(
+                text = "Недавние запросы",
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+            uiState.recentSearches.forEach { item ->
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { viewModel.onHistoryClick(item) }
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text = item)
+                    IconButton(onClick = { viewModel.removeFromHistory(item) }) {
+                        Icon(Icons.Default.Close, contentDescription = "Удалить")
+                    }
+                }
+            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        when {
+            uiState.isLoading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            uiState.error != null -> {
+                Text(
+                    text = uiState.error.orEmpty(),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+            uiState.products.isEmpty() -> {
+                Text(
+                    text = "Ничего не найдено",
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            else -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    item {
+                        Text(
+                            text = "Найдено: ${uiState.products.size}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    items(uiState.products, key = { it.id }) { product ->
+                        SearchProductRow(
+                            product = product,
+                            onClick = { navigateToItemDetails(product) },
+                        )
+                    }
                 }
             }
         }
@@ -252,39 +235,191 @@ fun SearchResultsContainer(
 }
 
 @Composable
-fun ProductItem(
+private fun SearchFiltersPanel(
+    uiState: SearchScreenUiState,
+    onCategorySelected: (String?) -> Unit,
+    onMinRatingSelected: (Double?) -> Unit,
+    onMinPriceChange: (String) -> Unit,
+    onMaxPriceChange: (String) -> Unit,
+    onSortSelected: (ProductSortOrder) -> Unit,
+) {
+    Column(modifier = Modifier.padding(top = 8.dp)) {
+        Text(
+            text = "Категория",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FilterChip(
+                selected = uiState.selectedCategory == null,
+                onClick = { onCategorySelected(null) },
+                label = { Text("Все") },
+            )
+            uiState.categories.forEach { category ->
+                FilterChip(
+                    selected = uiState.selectedCategory == category,
+                    onClick = { onCategorySelected(category) },
+                    label = { Text(category) },
+                )
+            }
+        }
+
+        Text(
+            text = "Рейтинг",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FilterChip(
+                selected = uiState.minRating == null,
+                onClick = { onMinRatingSelected(null) },
+                label = { Text("Любой") },
+            )
+            FilterChip(
+                selected = uiState.minRating == 3.0,
+                onClick = { onMinRatingSelected(3.0) },
+                label = { Text("от 3★") },
+            )
+            FilterChip(
+                selected = uiState.minRating == 4.0,
+                onClick = { onMinRatingSelected(4.0) },
+                label = { Text("от 4★") },
+            )
+            FilterChip(
+                selected = uiState.minRating == 4.5,
+                onClick = { onMinRatingSelected(4.5) },
+                label = { Text("от 4.5★") },
+            )
+        }
+
+        Text(
+            text = "Цена, ₽",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                value = uiState.minPriceText,
+                onValueChange = onMinPriceChange,
+                modifier = Modifier.weight(1f),
+                label = { Text("от") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            )
+            OutlinedTextField(
+                value = uiState.maxPriceText,
+                onValueChange = onMaxPriceChange,
+                modifier = Modifier.weight(1f),
+                label = { Text("до") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            )
+        }
+
+        Text(
+            text = "Сортировка",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SortChip("По умолчанию", ProductSortOrder.RELEVANCE, uiState.sortOrder, onSortSelected)
+            SortChip("Цена ↑", ProductSortOrder.PRICE_ASC, uiState.sortOrder, onSortSelected)
+            SortChip("Цена ↓", ProductSortOrder.PRICE_DESC, uiState.sortOrder, onSortSelected)
+            SortChip("Рейтинг", ProductSortOrder.RATING_DESC, uiState.sortOrder, onSortSelected)
+            SortChip("Название", ProductSortOrder.TITLE_ASC, uiState.sortOrder, onSortSelected)
+        }
+    }
+}
+
+private fun SearchScreenUiState.activeFiltersCount(): Int {
+    var count = 0
+    if (selectedCategory != null) count++
+    if (minRating != null) count++
+    if (minPrice != null) count++
+    if (maxPrice != null) count++
+    if (sortOrder != ProductSortOrder.RELEVANCE) count++
+    return count
+}
+
+@Composable
+private fun SortChip(
+    label: String,
+    value: ProductSortOrder,
+    selected: ProductSortOrder,
+    onSelected: (ProductSortOrder) -> Unit,
+) {
+    FilterChip(
+        selected = selected == value,
+        onClick = { onSelected(value) },
+        label = { Text(label) },
+    )
+}
+
+@Composable
+private fun SearchProductRow(
     product: Product,
-    navigateToItemDetails: (product: Product) -> Unit,
+    onClick: () -> Unit,
 ) {
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clickable(enabled = true, onClick = { navigateToItemDetails(product) }),
+                .clickable(onClick = onClick)
+                .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Product image
         AsyncImage(
             model = product.image,
             contentDescription = null,
             modifier =
                 Modifier
-                    .size(50.dp)
+                    .size(56.dp)
                     .clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop,
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = product.title,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 2,
             )
             Text(
-                text = "${product.category} - $${product.price}",
+                text =
+                    "${product.category} · ${
+                        String.format(Locale("ru", "RU"), "%.1f★", product.rating)
+                    } · ${
+                        String.format(Locale("ru", "RU"), "%.0f ₽", product.price)
+                    }",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
             )
         }

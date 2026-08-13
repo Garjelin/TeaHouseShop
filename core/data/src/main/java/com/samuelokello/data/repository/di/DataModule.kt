@@ -21,6 +21,7 @@ import com.samuelokello.core.domain.usecase.product.GetProductByIdUseCase
 import com.samuelokello.core.domain.usecase.product.GetProductsPageUseCase
 import com.samuelokello.core.domain.usecase.product.GetProductsUseCase
 import com.samuelokello.core.domain.usecase.product.SearchProductsUseCase
+import com.samuelokello.core.domain.usecase.product.SearchProductsWithFiltersUseCase
 import com.samuelokello.data.repository.ProductRepositoryImpl
 import com.samuelokello.data.repository.repository.AuthenticationRepositoryImpl
 import com.samuelokello.data.repository.repository.CartRepositoryImpl
@@ -68,6 +69,7 @@ val dataModule =
         factory { GetProductsPageUseCase(get()) }
         factory { CountProductsUseCase(get()) }
         factory { SearchProductsUseCase(get()) }
+        factory { SearchProductsWithFiltersUseCase(get()) }
 
         factory { LoginUseCase(get()) }
         factory { RegisterUseCase(get()) }

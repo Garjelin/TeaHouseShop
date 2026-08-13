@@ -41,17 +41,15 @@ class ProductRepositoryImpl(
         category: String?,
         minCount: Int?,
         minRating: Double?,
-    ): Flow<List<Product>> {
-        // TODO: Реализовать в спринте 7
-        return localSource.searchProductsWithFilters(
+    ): Flow<List<Product>> =
+        localSource.searchProductsWithFilters(
             query = query,
             minPrice = minPrice,
             maxPrice = maxPrice,
             category = category,
             minCount = minCount,
-            minRating = minRating
+            minRating = minRating,
         )
-    }
 
     override suspend fun getProductById(id: Int): Product? {
         return localSource.getProductById(id)

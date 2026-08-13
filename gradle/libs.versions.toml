@@ -39,8 +39,8 @@ room = "2.7.2"
 projectMinSdkVersion = "25"
 projectTargetSdkVersion = "36"
 projectCompileSdkVersion = "36"
-projectVersionCode = "6"
-projectVersionName = "0.6.0-beta"
+projectVersionCode = "7"
+projectVersionName = "0.7.0-beta"
 playServicesAnalyticsImpl = "18.2.0"
 
 [libraries]

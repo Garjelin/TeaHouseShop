@@ -96,8 +96,27 @@ class ProductLocalSourceImpl(
         minCount: Int?,
         minRating: Double?,
     ): Flow<List<Product>> {
-        // TODO: Реализовать позже с более сложными запросами
-        TODO("Not yet implemented - будет реализовано в спринте 7")
+        val normalizedQuery = query.trim()
+        return getProducts().map { products ->
+            products.filter { product ->
+                val matchesQuery =
+                    normalizedQuery.isBlank() ||
+                        product.title.contains(normalizedQuery, ignoreCase = true) ||
+                        product.description.contains(normalizedQuery, ignoreCase = true)
+                val matchesCategory =
+                    category.isNullOrBlank() || product.category.equals(category, ignoreCase = true)
+                val matchesMinPrice = minPrice == null || product.price >= minPrice
+                val matchesMaxPrice = maxPrice == null || product.price <= maxPrice
+                val matchesMinCount = minCount == null || product.count >= minCount
+                val matchesMinRating = minRating == null || product.rating >= minRating
+                matchesQuery &&
+                    matchesCategory &&
+                    matchesMinPrice &&
+                    matchesMaxPrice &&
+                    matchesMinCount &&
+                    matchesMinRating
+            }
+        }
     }
 
     override suspend fun getProductById(id: Int): Product? {
