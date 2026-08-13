@@ -101,6 +101,12 @@ fun topBarManager(
                         topBarType = TopBarType.CenterAligned,
                         showBackIcon = false,
                     )
+                currentRoute?.startsWith(Screens.OrderDetails.route) == true ->
+                    TopBarConfig(
+                        title = "Заказ",
+                        topBarType = TopBarType.CenterAligned,
+                        showBackIcon = true,
+                    )
                 else ->
                     TopBarConfig(
                         title = "",

@@ -39,6 +39,7 @@ import com.samuelokello.feat.cart.CartScreen
 import com.samuelokello.feat.favourite.FavouriteScreen
 import com.samuelokello.feat.home.HomeScreen
 import com.samuelokello.feat.order.CheckoutScreen
+import com.samuelokello.feat.order.OrderDetailScreen
 import com.samuelokello.feat.order.OrderPlacedScreen
 import com.samuelokello.feat.product.ProductDetailsScreen
 import com.samuelokello.feat.profile.ProfileScreen
@@ -202,7 +203,19 @@ fun ShopSpotAppNavHost(navigationViewModel: NavigationViewModel = viewModel()) {
                             launchSingleTop = true
                         }
                     },
+                    navigateToOrderDetails = { orderId ->
+                        navController.navigate("${Screens.OrderDetails.route}/$orderId")
+                    },
                 )
+            }
+            composable(
+                route = "${Screens.OrderDetails.route}/{orderId}",
+                arguments = listOf(navArgument("orderId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId")
+                if (orderId != null) {
+                    OrderDetailScreen(orderId = orderId)
+                }
             }
             composable(
                 route = "${Screens.OrderPlaced.route}/{orderId}",

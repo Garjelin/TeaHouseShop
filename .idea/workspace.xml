@@ -10,7 +10,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a5ad707-2e12-43c8-b105-47c14651830c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/buildLogic/.gradle/8.14.3/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/buildLogic/.gradle/8.14.3/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/buildLogic/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/buildLogic/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/buildLogic/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/buildLogic/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/java/com/samuelokello/data/repository/di/DataModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/java/com/samuelokello/data/repository/di/DataModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/java/com/samuelokello/core/domain/model/Screens.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/java/com/samuelokello/core/domain/model/Screens.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/java/com/samuelokello/core/domain/repository/OrderRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/java/com/samuelokello/core/domain/repository/OrderRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/presentation/designsystem/src/main/kotlin/com/samuelokello/core/presentation/designsystem/components/TopBarManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/presentation/designsystem/src/main/kotlin/com/samuelokello/core/presentation/designsystem/components/TopBarManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/presentation/ui/src/main/java/com/samuelokello/core/presentation/ui/navigation/ShopSpotAppNavHost.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/presentation/ui/src/main/java/com/samuelokello/core/presentation/ui/navigation/ShopSpotAppNavHost.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DEVELOPMENT_PLAN.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/DEVELOPMENT_PLAN.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feat/order/src/main/java/com/samuelokello/feat/order/di/OrderModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feat/order/src/main/java/com/samuelokello/feat/order/di/OrderModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feat/profile/src/main/java/com/samuelokello/feat/profile/ProfileScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feat/profile/src/main/java/com/samuelokello/feat/profile/ProfileScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feat/profile/src/main/java/com/samuelokello/feat/profile/ProfileViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feat/profile/src/main/java/com/samuelokello/feat/profile/ProfileViewModel.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +36,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/home/garjelin/.android/avd/Device_1.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />

@@ -13,6 +13,8 @@ import com.samuelokello.core.domain.usecase.auth.ResetPasswordUseCase
 import com.samuelokello.core.domain.usecase.cart.AddToCartUseCase
 import com.samuelokello.core.domain.usecase.cart.ClearCartUseCase
 import com.samuelokello.core.domain.usecase.order.CreateOrderUseCase
+import com.samuelokello.core.domain.usecase.order.GetOrderByIdUseCase
+import com.samuelokello.core.domain.usecase.order.GetUserOrdersUseCase
 import com.samuelokello.core.domain.usecase.product.CountProductsUseCase
 import com.samuelokello.core.domain.usecase.product.GetCategoriesUseCase
 import com.samuelokello.core.domain.usecase.product.GetProductByIdUseCase
@@ -77,4 +79,6 @@ val dataModule =
         factory { ClearCartUseCase(get()) }
 
         factory { CreateOrderUseCase(get(), get(), get()) }
+        factory { GetUserOrdersUseCase(get()) }
+        factory { GetOrderByIdUseCase(get()) }
     }

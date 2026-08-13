@@ -21,6 +21,8 @@ sealed class Screens(
 
     data object OrderPlaced : Screens("order_placed_screen")
 
+    data object OrderDetails : Screens("order_details_screen")
+
     data object ProductDetailsScreen : Screens("product_details_screen?product={product}")
 
     data object Search : Screens("Search")

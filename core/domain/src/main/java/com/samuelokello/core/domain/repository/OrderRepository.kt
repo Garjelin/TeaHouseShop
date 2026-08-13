@@ -3,7 +3,7 @@ package com.samuelokello.core.domain.repository
 import com.samuelokello.core.domain.model.Order
 
 /**
- * Локальные заказы (offline-first). Отправка на сервер — во второй половине спринта 6 / при появлении API.
+ * Локальные заказы (offline-first). Отправка на сервер — при появлении API.
  */
 interface OrderRepository {
     suspend fun createOrder(order: Order): Result<Order>
